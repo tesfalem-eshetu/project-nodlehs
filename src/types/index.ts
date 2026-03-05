@@ -6,4 +6,4 @@ export {
   Category,
   ServiceRequestStatus,
 } from './serviceRequest';
-export type { ActivityEntry, ServiceRequest } from './serviceRequest';
+export type { ActivityEntry, CreateServiceRequestPayload, ServiceRequest } from './serviceRequest';

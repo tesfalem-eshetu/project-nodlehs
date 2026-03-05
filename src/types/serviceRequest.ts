@@ -26,6 +26,15 @@ export interface ActivityEntry {
   content: string;
 }
 
+export interface CreateServiceRequestPayload {
+  deviceId: string;
+  title: string;
+  description: string;
+  priority: Priority;
+  category: Category;
+  scheduledDate: string;
+}
+
 export interface ServiceRequest {
   id: string;
   deviceId: string;
