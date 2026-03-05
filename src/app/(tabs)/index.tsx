@@ -1,9 +1,70 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { useState, useMemo } from 'react';
+import { View, FlatList, StyleSheet } from 'react-native';
+import { Searchbar, Text, ActivityIndicator } from 'react-native-paper';
+import { useRouter } from 'expo-router';
+import { useAppSelector } from '@/store';
+import { selectAllDevices, selectDevicesStatus } from '@/store/selectors/deviceSelectors';
+import { selectOpenRequestCountsMap } from '@/store/selectors/serviceRequestSelectors';
+import DeviceListItem from '@/components/DeviceListItem';
 
 export default function EquipmentListScreen() {
+  const router = useRouter();
+  const devices = useAppSelector(selectAllDevices);
+  const status = useAppSelector(selectDevicesStatus);
+  const openCounts = useAppSelector(selectOpenRequestCountsMap);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredDevices = useMemo(() => {
+    if (!searchQuery.trim()) return devices;
+    const query = searchQuery.toLowerCase();
+    return devices.filter(
+      (d) =>
+        d.name.toLowerCase().includes(query) ||
+        d.type.toLowerCase().includes(query) ||
+        d.location.toLowerCase().includes(query),
+    );
+  }, [devices, searchQuery]);
+
+  if (status === 'loading') {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (status === 'failed') {
+    return (
+      <View style={styles.center}>
+        <Text>Failed to load devices</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Text>Equipment List</Text>
+      <Searchbar
+        placeholder="Search by name, type, or location"
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        style={styles.searchbar}
+      />
+      <FlatList
+        data={filteredDevices}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <DeviceListItem
+            device={item}
+            openRequestCount={openCounts[item.id] ?? 0}
+            onPress={() => router.push(`/device/${item.id}`)}
+          />
+        )}
+        ListEmptyComponent={
+          <View style={styles.center}>
+            <Text>No devices found</Text>
+          </View>
+        }
+      />
     </View>
   );
 }
@@ -11,7 +72,14 @@ export default function EquipmentListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  center: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 16,
+  },
+  searchbar: {
+    margin: 8,
   },
 });
