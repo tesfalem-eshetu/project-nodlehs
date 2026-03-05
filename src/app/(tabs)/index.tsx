@@ -2,16 +2,12 @@ import { useState, useMemo } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import { Searchbar, Text, ActivityIndicator } from 'react-native-paper';
 import { useRouter } from 'expo-router';
-import { useAppSelector } from '@/store';
-import { selectAllDevices, selectDevicesStatus } from '@/store/selectors/deviceSelectors';
-import { selectOpenRequestCountsMap } from '@/store/selectors/serviceRequestSelectors';
+import useEquipmentList from '@/hooks/useEquipmentList';
 import DeviceListItem from '@/components/DeviceListItem';
 
 export default function EquipmentListScreen() {
   const router = useRouter();
-  const devices = useAppSelector(selectAllDevices);
-  const status = useAppSelector(selectDevicesStatus);
-  const openCounts = useAppSelector(selectOpenRequestCountsMap);
+  const { devices, status, openCounts } = useEquipmentList();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredDevices = useMemo(() => {

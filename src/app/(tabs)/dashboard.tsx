@@ -1,16 +1,10 @@
-import { useCallback } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import { Text, Divider, ActivityIndicator } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useAppSelector } from '@/store';
-import {
-  selectCountsByStatus,
-  selectCountsByPriority,
-  selectOverdueRequests,
-  selectServiceRequestsStatus,
-} from '@/store/selectors/serviceRequestSelectors';
 import { selectDeviceById } from '@/store/selectors/deviceSelectors';
 import type { ServiceRequest } from '@/types';
+import useDashboardData from '@/hooks/useDashboardData';
 import ServiceRequestListItem from '@/components/ServiceRequestListItem';
 
 function DeviceNameLabel({ deviceId }: { deviceId: string }) {
@@ -39,17 +33,7 @@ function OverdueItem({
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const statusCounts = useAppSelector(selectCountsByStatus);
-  const priorityCounts = useAppSelector(selectCountsByPriority);
-  const overdueRequests = useAppSelector(selectOverdueRequests);
-  const status = useAppSelector(selectServiceRequestsStatus);
-
-  const handleSRPress = useCallback(
-    (sr: ServiceRequest) => {
-      router.push(`/service-request/${sr.id}`);
-    },
-    [router],
-  );
+  const { statusCounts, priorityCounts, overdueRequests, status } = useDashboardData();
 
   if (status === 'loading') {
     return (
@@ -64,7 +48,10 @@ export default function DashboardScreen() {
       data={overdueRequests}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
-        <OverdueItem item={item} onPress={() => handleSRPress(item)} />
+        <OverdueItem
+          item={item}
+          onPress={() => router.push(`/service-request/${item.id}`)}
+        />
       )}
       ListHeaderComponent={
         <View>

@@ -1,15 +1,8 @@
-import { useState, useCallback } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import { Text, Button, TextInput, Divider } from 'react-native-paper';
 import { useLocalSearchParams, Stack } from 'expo-router';
-import { useAppSelector, useAppDispatch } from '@/store';
-import { selectServiceRequestById } from '@/store/selectors/serviceRequestSelectors';
-import { selectDeviceById } from '@/store/selectors/deviceSelectors';
-import {
-  updateServiceRequestStatus,
-  addNoteToServiceRequest,
-} from '@/store/thunks/serviceRequestThunks';
 import { ServiceRequestStatus, Category } from '@/types';
+import useServiceRequestDetail from '@/hooks/useServiceRequestDetail';
 import StatusIndicator from '@/components/StatusIndicator';
 import PriorityIndicator from '@/components/PriorityIndicator';
 import ActivityLogEntryComponent from '@/components/ActivityLogEntry';
@@ -23,50 +16,16 @@ const CATEGORY_LABELS: Record<Category, string> = {
 
 export default function ServiceRequestDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const dispatch = useAppDispatch();
-  const sr = useAppSelector((state) => selectServiceRequestById(state, id));
-  const device = useAppSelector((state) =>
-    sr ? selectDeviceById(state, sr.deviceId) : null,
-  );
-
-  const [noteText, setNoteText] = useState('');
-  const [updating, setUpdating] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
-
-  const handleStatusUpdate = useCallback(
-    async (newStatus: ServiceRequestStatus) => {
-      if (!sr) return;
-      setUpdating(true);
-      setActionError(null);
-      try {
-        await dispatch(
-          updateServiceRequestStatus({
-            id: sr.id,
-            status: newStatus,
-            deviceId: sr.deviceId,
-          }),
-        ).unwrap();
-      } catch (e) {
-        setActionError(e instanceof Error ? e.message : 'Failed to update status');
-      } finally {
-        setUpdating(false);
-      }
-    },
-    [dispatch, sr],
-  );
-
-  const handleAddNote = useCallback(async () => {
-    if (!sr || !noteText.trim()) return;
-    setActionError(null);
-    try {
-      await dispatch(
-        addNoteToServiceRequest({ id: sr.id, content: noteText.trim() }),
-      ).unwrap();
-      setNoteText('');
-    } catch (e) {
-      setActionError(e instanceof Error ? e.message : 'Failed to add note');
-    }
-  }, [dispatch, sr, noteText]);
+  const {
+    sr,
+    device,
+    noteText,
+    setNoteText,
+    updating,
+    actionError,
+    handleStatusUpdate,
+    handleAddNote,
+  } = useServiceRequestDetail(id);
 
   if (!sr) {
     return (

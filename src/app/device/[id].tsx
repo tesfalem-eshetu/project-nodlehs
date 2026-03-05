@@ -2,9 +2,7 @@ import { useCallback } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import { Text, Button, Divider } from 'react-native-paper';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { useAppSelector } from '@/store';
-import { selectDeviceById } from '@/store/selectors/deviceSelectors';
-import { selectRequestsByDeviceId } from '@/store/selectors/serviceRequestSelectors';
+import useDeviceWithRequests from '@/hooks/useDeviceWithRequests';
 import StatusIndicator from '@/components/StatusIndicator';
 import ServiceRequestListItem from '@/components/ServiceRequestListItem';
 
@@ -16,8 +14,7 @@ function formatDate(dateStr: string | null): string {
 export default function DeviceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const device = useAppSelector((state) => selectDeviceById(state, id));
-  const serviceRequests = useAppSelector((state) => selectRequestsByDeviceId(state, id));
+  const { device, serviceRequests } = useDeviceWithRequests(id);
 
   const handleCreateSR = useCallback(() => {
     router.push(`/service-request/create?deviceId=${id}`);
