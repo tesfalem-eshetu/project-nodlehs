@@ -36,7 +36,7 @@ export default function StatusIndicator({ status }: StatusIndicatorProps) {
 
 const styles = StyleSheet.create({
   badge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 3,
     borderRadius: 12,
     alignSelf: 'flex-start',

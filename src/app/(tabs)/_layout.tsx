@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAppTheme } from '@/theme';
 import { brand } from '@/theme/colors';
 
@@ -8,10 +9,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: true,
-        headerStyle: { backgroundColor: theme.colors.surface },
-        headerTintColor: theme.colors.onSurface,
-        headerShadowVisible: false,
+        headerShown: false,
         tabBarStyle: {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.outlineVariant,
@@ -24,12 +22,18 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Equipment',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="devices" color={color} size={size} />
+          ),
         }}
       />
       <Tabs.Screen
         name="dashboard"
         options={{
           title: 'Dashboard',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="view-dashboard-outline" color={color} size={size} />
+          ),
         }}
       />
     </Tabs>

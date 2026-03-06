@@ -8,6 +8,7 @@ import { brand, light, dark } from './colors';
 
 export const lightTheme: MD3Theme = {
   ...MD3LightTheme,
+  roundness: 6,
   colors: {
     ...MD3LightTheme.colors,
     primary: brand.teal,
@@ -54,6 +55,7 @@ export const lightTheme: MD3Theme = {
 
 export const darkTheme: MD3Theme = {
   ...MD3DarkTheme,
+  roundness: 6,
   colors: {
     ...MD3DarkTheme.colors,
     primary: brand.tealLight,

@@ -61,10 +61,10 @@ export default function RootLayout() {
             contentStyle: { backgroundColor: theme.colors.background },
           }}
         >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="device/[id]" options={{ title: 'Device Details' }} />
-          <Stack.Screen name="service-request/create" options={{ title: 'New Service Request' }} />
-          <Stack.Screen name="service-request/[id]" options={{ title: 'Service Request' }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false, headerBackTitle: 'Back' }} />
+          <Stack.Screen name="device/[id]" options={{ title: 'Device Details', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="service-request/create" options={{ title: 'New Service Request', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="service-request/[id]" options={{ title: 'Service Request', headerBackTitle: 'Back' }} />
         </Stack>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       </PaperProvider>

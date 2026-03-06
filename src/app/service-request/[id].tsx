@@ -1,6 +1,7 @@
 import { View, FlatList, StyleSheet } from 'react-native';
-import { Text, Button, TextInput, Divider, Card } from 'react-native-paper';
+import { Text, Button, TextInput, Card } from 'react-native-paper';
 import { useLocalSearchParams, Stack } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ServiceRequestStatus, Category } from '@/types';
 import { useAppTheme } from '@/theme';
 import useServiceRequestDetail from '@/hooks/useServiceRequestDetail';
@@ -10,7 +11,7 @@ import ActivityLogEntryComponent from '@/components/ActivityLogEntry';
 
 const CATEGORY_LABELS: Record<Category, string> = {
   repair: 'Repair',
-  preventive_maintenance: 'Preventive Maintenance',
+  preventive_maintenance: 'Preventive',
   inspection: 'Inspection',
   replacement: 'Replacement',
 };
@@ -18,6 +19,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
 export default function ServiceRequestDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const {
     sr,
     device,
@@ -43,142 +45,190 @@ export default function ServiceRequestDetailScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Stack.Screen options={{ title: sr.title }} />
+      <Stack.Screen options={{ title: '' }} />
 
       <FlatList
         data={sr.activityLog}
         keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) }}
         renderItem={({ item }) => <ActivityLogEntryComponent entry={item} />}
         ListHeaderComponent={
           <View>
             <Card style={[styles.card, { backgroundColor: theme.colors.surface }]} mode="contained">
               <Card.Content style={styles.cardContent}>
-                <Text variant="headlineSmall" style={{ color: theme.colors.onSurface }}>
-                  {sr.title}
-                </Text>
-                <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                <View style={styles.titleBlock}>
+                  <Text
+                    variant="titleLarge"
+                    style={[styles.titleText, { color: theme.colors.onSurface }]}
+                  >
+                    {sr.title}
+                  </Text>
+                  <View style={styles.chipRow}>
+                    <View
+                      style={[styles.categoryChip, { backgroundColor: theme.colors.surfaceVariant }]}
+                    >
+                      <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                        {CATEGORY_LABELS[sr.category]}
+                      </Text>
+                    </View>
+                    {device && (
+                      <View
+                        style={[styles.categoryChip, { backgroundColor: theme.colors.surfaceVariant }]}
+                      >
+                        <Text
+                          variant="labelSmall"
+                          style={{ color: theme.colors.onSurfaceVariant }}
+                          numberOfLines={1}
+                        >
+                          {device.name}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+
+                <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
+
+                <Text
+                  variant="bodyMedium"
+                  style={{ color: theme.colors.onSurfaceVariant, lineHeight: 22 }}
+                >
                   {sr.description}
                 </Text>
-                {device && (
-                  <DetailRow label="Device" value={device.name} />
-                )}
-                <View style={styles.row}>
-                  <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                    Status:{' '}
-                  </Text>
+
+                <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
+
+                <View style={styles.badgeRow}>
                   <StatusIndicator status={sr.status} />
-                </View>
-                <View style={styles.row}>
-                  <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                    Priority:{' '}
-                  </Text>
                   <PriorityIndicator priority={sr.priority} />
                 </View>
-                <DetailRow label="Category" value={CATEGORY_LABELS[sr.category] ?? sr.category} />
-                <DetailRow label="Scheduled" value={new Date(sr.scheduledDate).toLocaleDateString()} />
-                <DetailRow label="Created" value={new Date(sr.createdAt).toLocaleDateString()} />
+
+                <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
+
+                <DetailRow
+                  label="Scheduled"
+                  value={new Date(sr.scheduledDate).toLocaleDateString(undefined, {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                />
+                <DetailRow
+                  label="Created"
+                  value={new Date(sr.createdAt).toLocaleDateString(undefined, {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                />
               </Card.Content>
             </Card>
 
             {!isTerminal && (
-              <View style={styles.section}>
-                <Text variant="titleMedium" style={{ color: theme.colors.onBackground }}>
-                  Update Status
-                </Text>
-                <View style={styles.buttonRow}>
+              <Card style={[styles.card, { backgroundColor: theme.colors.surface }]} mode="contained">
+                <Card.Content style={styles.actionCardContent}>
+                  <Text
+                    variant="labelLarge"
+                    style={[styles.sectionLabel, { color: theme.colors.onSurfaceVariant }]}
+                  >
+                    Update Status
+                  </Text>
+
                   {sr.status === ServiceRequestStatus.Open && (
                     <>
                       <Button
                         mode="contained"
-                        onPress={() =>
-                          handleStatusUpdate(ServiceRequestStatus.InProgress)
-                        }
+                        onPress={() => handleStatusUpdate(ServiceRequestStatus.InProgress)}
                         loading={updating}
                         disabled={updating}
-                        compact
+                        contentStyle={styles.buttonContent}
                       >
                         Mark In Progress
                       </Button>
                       <Button
                         mode="outlined"
-                        onPress={() =>
-                          handleStatusUpdate(ServiceRequestStatus.Cancelled)
-                        }
+                        onPress={() => handleStatusUpdate(ServiceRequestStatus.Cancelled)}
                         loading={updating}
                         disabled={updating}
-                        compact
+                        contentStyle={styles.buttonContent}
+                        textColor={theme.colors.error}
+                        style={{ borderColor: theme.colors.error }}
                       >
-                        Cancel
+                        Cancel Request
                       </Button>
                     </>
                   )}
+
                   {sr.status === ServiceRequestStatus.InProgress && (
                     <>
                       <Button
                         mode="contained"
-                        onPress={() =>
-                          handleStatusUpdate(ServiceRequestStatus.Completed)
-                        }
+                        onPress={() => handleStatusUpdate(ServiceRequestStatus.Completed)}
                         loading={updating}
                         disabled={updating}
-                        compact
+                        contentStyle={styles.buttonContent}
                       >
                         Mark Completed
                       </Button>
                       <Button
                         mode="outlined"
-                        onPress={() =>
-                          handleStatusUpdate(ServiceRequestStatus.Cancelled)
-                        }
+                        onPress={() => handleStatusUpdate(ServiceRequestStatus.Cancelled)}
                         loading={updating}
                         disabled={updating}
-                        compact
+                        contentStyle={styles.buttonContent}
+                        textColor={theme.colors.error}
+                        style={{ borderColor: theme.colors.error }}
                       >
-                        Cancel
+                        Cancel Request
                       </Button>
                     </>
                   )}
-                </View>
-              </View>
+
+                  {actionError && (
+                    <Text variant="bodySmall" style={{ color: theme.colors.error }}>
+                      {actionError}
+                    </Text>
+                  )}
+                </Card.Content>
+              </Card>
             )}
 
-            {actionError && (
-              <Text
-                variant="bodySmall"
-                style={[styles.errorText, { color: theme.colors.error }]}
-              >
-                {actionError}
-              </Text>
-            )}
-
-            <Divider style={{ backgroundColor: theme.colors.outlineVariant }} />
-
-            <View style={styles.section}>
-              <Text variant="titleMedium" style={{ color: theme.colors.onBackground }}>
-                Add Note
-              </Text>
-              <TextInput
-                value={noteText}
-                onChangeText={setNoteText}
-                placeholder="Type a note..."
-                mode="outlined"
-                multiline
-              />
-              <Button
-                mode="contained-tonal"
-                onPress={handleAddNote}
-                disabled={!noteText.trim()}
-                style={styles.addNoteButton}
-              >
-                Add Note
-              </Button>
-            </View>
-
-            <Divider style={{ backgroundColor: theme.colors.outlineVariant }} />
+            <Card style={[styles.card, { backgroundColor: theme.colors.surface }]} mode="contained">
+              <Card.Content style={styles.actionCardContent}>
+                <Text
+                  variant="labelLarge"
+                  style={[styles.sectionLabel, { color: theme.colors.onSurfaceVariant }]}
+                >
+                  Add Note
+                </Text>
+                <TextInput
+                  value={noteText}
+                  onChangeText={setNoteText}
+                  placeholder="Type a note..."
+                  mode="outlined"
+                  multiline
+                  numberOfLines={3}
+                />
+                <Button
+                  mode="contained-tonal"
+                  onPress={handleAddNote}
+                  disabled={!noteText.trim()}
+                  contentStyle={styles.buttonContent}
+                >
+                  Add Note
+                </Button>
+              </Card.Content>
+            </Card>
 
             <View style={styles.sectionHeader}>
-              <Text variant="titleMedium" style={{ color: theme.colors.onBackground }}>
+              <Text
+                variant="labelLarge"
+                style={[styles.sectionHeaderText, { color: theme.colors.onSurfaceVariant }]}
+              >
                 Activity Log
+              </Text>
+              <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                {sr.activityLog.length} {sr.activityLog.length === 1 ? 'entry' : 'entries'}
               </Text>
             </View>
           </View>
@@ -197,7 +247,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   const theme = useAppTheme();
   return (
     <View style={styles.detailRow}>
-      <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+      <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
         {label}
       </Text>
       <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
@@ -218,43 +268,68 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   card: {
-    margin: 12,
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 0,
     borderRadius: 12,
   },
   cardContent: {
-    gap: 6,
+    gap: 12,
+  },
+  actionCardContent: {
+    gap: 12,
+  },
+  titleBlock: {
+    gap: 8,
+  },
+  titleText: {
+    fontWeight: '600',
+  },
+  chipRow: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  categoryChip: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
   },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  sectionLabel: {
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
-  section: {
-    padding: 16,
-    gap: 8,
+  sectionHeaderText: {
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  buttonContent: {
+    height: 48,
   },
   sectionHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  buttonRow: {
     flexDirection: 'row',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  addNoteButton: {
-    alignSelf: 'flex-start',
-  },
-  errorText: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 4,
+    paddingTop: 20,
+    paddingBottom: 8,
   },
   empty: {
-    padding: 16,
+    padding: 24,
     alignItems: 'center',
   },
 });

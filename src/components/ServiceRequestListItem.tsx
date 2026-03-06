@@ -1,6 +1,7 @@
 import { View, StyleSheet } from 'react-native';
-import { Text, TouchableRipple } from 'react-native-paper';
+import { Text, Card } from 'react-native-paper';
 import type { ServiceRequest } from '@/types';
+import { Category } from '@/types';
 import { useAppTheme } from '@/theme';
 import StatusIndicator from './StatusIndicator';
 import PriorityIndicator from './PriorityIndicator';
@@ -10,6 +11,13 @@ interface ServiceRequestListItemProps {
   onPress: () => void;
 }
 
+const CATEGORY_LABELS: Record<Category, string> = {
+  [Category.Repair]: 'Repair',
+  [Category.PreventiveMaintenance]: 'Preventive',
+  [Category.Inspection]: 'Inspection',
+  [Category.Replacement]: 'Replacement',
+};
+
 export default function ServiceRequestListItem({
   serviceRequest,
   onPress,
@@ -17,39 +25,80 @@ export default function ServiceRequestListItem({
   const theme = useAppTheme();
 
   return (
-    <TouchableRipple onPress={onPress}>
-      <View
-        style={[
-          styles.container,
-          {
-            backgroundColor: theme.colors.surface,
-            borderBottomColor: theme.colors.outlineVariant,
-          },
-        ]}
-      >
-        <Text variant="titleSmall" style={{ color: theme.colors.onSurface }}>
-          {serviceRequest.title}
-        </Text>
-        <View style={styles.row}>
-          <StatusIndicator status={serviceRequest.status} />
-          <PriorityIndicator priority={serviceRequest.priority} />
+    <Card
+      style={[styles.card, { backgroundColor: theme.colors.surface }]}
+      mode="contained"
+      onPress={onPress}
+    >
+      <Card.Content style={styles.content}>
+        <View style={styles.topRow}>
+          <Text
+            variant="titleSmall"
+            style={[styles.title, { color: theme.colors.onSurface }]}
+            numberOfLines={2}
+          >
+            {serviceRequest.title}
+          </Text>
+          <View style={[styles.categoryChip, { backgroundColor: theme.colors.surfaceVariant }]}>
+            <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              {CATEGORY_LABELS[serviceRequest.category]}
+            </Text>
+          </View>
+        </View>
+
+        <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
+
+        <View style={styles.bottomRow}>
+          <View style={styles.badges}>
+            <StatusIndicator status={serviceRequest.status} />
+            <PriorityIndicator priority={serviceRequest.priority} />
+          </View>
           <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-            {new Date(serviceRequest.createdAt).toLocaleDateString()}
+            {new Date(serviceRequest.scheduledDate).toLocaleDateString(undefined, {
+              month: 'short',
+              day: 'numeric',
+            })}
           </Text>
         </View>
-      </View>
-    </TouchableRipple>
+      </Card.Content>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    gap: 8,
+  card: {
+    marginHorizontal: 16,
+    marginVertical: 6,
+    borderRadius: 12,
   },
-  row: {
+  content: {
+    gap: 12,
+  },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  title: {
+    fontWeight: '500',
+    flex: 1,
+    marginRight: 10,
+  },
+  categoryChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 6,
+    flexShrink: 0,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  badges: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,

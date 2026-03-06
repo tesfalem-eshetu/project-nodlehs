@@ -31,7 +31,7 @@ export default function PriorityIndicator({ priority }: PriorityIndicatorProps) 
 
 const styles = StyleSheet.create({
   badge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 3,
     borderRadius: 12,
     alignSelf: 'flex-start',
