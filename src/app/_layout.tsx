@@ -55,7 +55,7 @@ export default function RootLayout() {
         <DataLoader />
         <Stack
           screenOptions={{
-            headerStyle: { backgroundColor: theme.colors.surface },
+            headerStyle: { backgroundColor: theme.colors.background },
             headerTintColor: theme.colors.onSurface,
             headerShadowVisible: false,
             contentStyle: { backgroundColor: theme.colors.background },

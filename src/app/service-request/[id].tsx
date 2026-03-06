@@ -1,4 +1,6 @@
-import { View, FlatList, StyleSheet } from 'react-native';
+import { View, FlatList, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { useRef } from 'react';
+import type { ActivityEntry } from '@/types';
 import { Text, Button, TextInput, Card } from 'react-native-paper';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,6 +22,7 @@ export default function ServiceRequestDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
+  const listRef = useRef<FlatList<ActivityEntry>>(null);
   const {
     sr,
     device,
@@ -45,12 +48,18 @@ export default function ServiceRequestDetailScreen() {
     sr.status === ServiceRequestStatus.Cancelled;
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
       <Stack.Screen options={{ title: '' }} />
 
       <FlatList
+        ref={listRef}
         data={sr.activityLog}
         keyExtractor={(item) => item.id}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) }}
         renderItem={({ item }) => <ActivityLogEntryComponent entry={item} />}
         ListHeaderComponent={
@@ -90,15 +99,6 @@ export default function ServiceRequestDetailScreen() {
 
                 <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
 
-                <Text
-                  variant="bodyMedium"
-                  style={{ color: theme.colors.onSurfaceVariant, lineHeight: 22 }}
-                >
-                  {sr.description}
-                </Text>
-
-                <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
-
                 <View style={styles.badgeRow}>
                   <StatusIndicator status={sr.status} />
                   <PriorityIndicator priority={sr.priority} />
@@ -122,6 +122,15 @@ export default function ServiceRequestDetailScreen() {
                     year: 'numeric',
                   })}
                 />
+
+                <View style={[styles.divider, { backgroundColor: theme.colors.outlineVariant }]} />
+
+                <Text
+                  variant="bodyMedium"
+                  style={{ color: theme.colors.onSurfaceVariant, lineHeight: 22 }}
+                >
+                  {sr.description}
+                </Text>
               </Card.Content>
             </Card>
 
@@ -205,6 +214,11 @@ export default function ServiceRequestDetailScreen() {
                 <TextInput
                   value={noteText}
                   onChangeText={setNoteText}
+                  onFocus={() => {
+                    setTimeout(() => {
+                      listRef.current?.scrollToEnd({ animated: true });
+                    }, 100);
+                  }}
                   placeholder="Type a note..."
                   mode="outlined"
                   multiline
@@ -241,7 +255,7 @@ export default function ServiceRequestDetailScreen() {
           </View>
         }
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
