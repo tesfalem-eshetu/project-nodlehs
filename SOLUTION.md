@@ -69,11 +69,12 @@ React Native Paper was chosen for its built-in Material Design 3 theming system,
 
 ## Testing
 
-The project includes 116 unit tests across 12 test suites, covering both core state logic and UI components:
+The project includes 136 unit tests across 13 test suites, covering core state logic, business rules, and UI components:
 
 - **Redux selectors** (26 tests): Every selector is tested, including filtered queries (`selectRequestsByDeviceId`, `selectOverdueRequests`), aggregations (`selectCountsByStatus`, `selectCountsByPriority`, `selectOpenRequestCountsMap`), and edge cases like empty state and missing IDs.
 - **Redux thunks** (13 tests): Each thunk is tested with the API layer fully mocked. Tests verify the loading lifecycle (pending/fulfilled/rejected), correct dispatch behavior, and cross-slice coordination (e.g., `updateServiceRequestStatus` with Completed triggers a device `lastMaintenanceDate` update).
 - **Slice reducers** (38 tests): Reducers are driven directly with raw action objects to test every branch of the optimistic update and rollback logic in isolation -- including edge cases like non-existent IDs, missing rollback data, and the difference between Completed and non-Completed status transitions on the devices slice.
+- **API service layer** (20 tests): The simulated service request API is tested against its real implementation (not mocked) to validate business rules -- specifically the status transition matrix (which transitions are allowed vs rejected), CRUD operations, deep copy guarantees, activity log construction, and error handling for missing entities.
 - **UI components** (29 tests): All five reusable components (`StatusIndicator`, `PriorityIndicator`, `DeviceListItem`, `ServiceRequestListItem`, `ActivityLogEntry`) are rendered with React Native Testing Library and verified for correct label mapping, conditional rendering, date formatting, and press interactions.
 - **Form validation** (10 tests): The Create Service Request screen is tested end-to-end for required field validation, whitespace handling, real-time error clearing, successful dispatch with navigation, and form-level error display on failure.
 
@@ -98,6 +99,8 @@ I used Claude (via Cursor) throughout this project, and it was a genuine acceler
 Where AI really shined was in execution speed. Claude handled a significant portion of the code writing, which allowed me to implement features like optimistic updates, pull-to-refresh, custom hooks, and a full theming system in a fraction of the time it would have taken manually. The workflow was iterative and fast -- I would describe what I wanted, review the output, give feedback on design and behavior, and guide the next iteration. This tight feedback loop let me focus on product thinking and UX decisions while the implementation kept pace.
 
 Debugging was also collaborative. A good example: every mutation (create service request, update status, add note) was failing silently at runtime. Tracing through the logs revealed that `uuid` v13 calls `crypto.getRandomValues()` internally, but the React Native Hermes engine does not expose it on the global scope. ID generation was throwing before the API call even ran. The fix was installing `react-native-get-random-values` as a polyfill and importing it as the very first line in the app entry point, before any other module loads. Without Claude helping trace that through the logs, that could have been a multi-hour detour.
+
+Testing was another area where AI proved valuable. Claude helped me build a comprehensive test suite of 136 unit tests that covers edge cases I might have missed on my own -- things like rollback behavior when no rollback data exists, ensuring deep copies prevent state mutation between reads, verifying that terminal statuses (Completed, Cancelled) reject all outbound transitions, and confirming that whitespace-only form input is treated as empty. It also handled the boilerplate-heavy parts like setting up mocks for React Native Paper's theme provider and safe area context, configuring Jest for the Expo/RTK ecosystem, and constructing properly shaped action objects for direct reducer testing. This let me focus on deciding what to test and why, while the actual test authoring happened quickly.
 
 The result is a project that reflects my vision, priorities, and product instincts, built at a pace that AI tooling made possible. I see leveraging AI effectively as a core part of how modern software is built, and this project is a deliberate example of that approach.
 
