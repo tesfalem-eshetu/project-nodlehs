@@ -63,7 +63,7 @@ export default function RootLayout() {
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false, headerBackTitle: 'Back' }} />
           <Stack.Screen name="device/[id]" options={{ title: 'Device Details', headerBackTitle: 'Back' }} />
-          <Stack.Screen name="service-request/create" options={{ title: 'New Service Request', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="service-request/create" options={{ title: '', headerBackTitle: 'Back' }} />
           <Stack.Screen name="service-request/[id]" options={{ title: 'Service Request', headerBackTitle: 'Back' }} />
         </Stack>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />

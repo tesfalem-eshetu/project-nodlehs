@@ -25,7 +25,8 @@ export default function ServiceRequestDetailScreen() {
     device,
     noteText,
     setNoteText,
-    updating,
+    updatingStatus,
+    addingNote,
     actionError,
     handleStatusUpdate,
     handleAddNote,
@@ -139,8 +140,8 @@ export default function ServiceRequestDetailScreen() {
                       <Button
                         mode="contained"
                         onPress={() => handleStatusUpdate(ServiceRequestStatus.InProgress)}
-                        loading={updating}
-                        disabled={updating}
+                        loading={updatingStatus === ServiceRequestStatus.InProgress}
+                        disabled={updatingStatus !== null}
                         contentStyle={styles.buttonContent}
                       >
                         Mark In Progress
@@ -148,8 +149,8 @@ export default function ServiceRequestDetailScreen() {
                       <Button
                         mode="outlined"
                         onPress={() => handleStatusUpdate(ServiceRequestStatus.Cancelled)}
-                        loading={updating}
-                        disabled={updating}
+                        loading={updatingStatus === ServiceRequestStatus.Cancelled}
+                        disabled={updatingStatus !== null}
                         contentStyle={styles.buttonContent}
                         textColor={theme.colors.error}
                         style={{ borderColor: theme.colors.error }}
@@ -164,8 +165,8 @@ export default function ServiceRequestDetailScreen() {
                       <Button
                         mode="contained"
                         onPress={() => handleStatusUpdate(ServiceRequestStatus.Completed)}
-                        loading={updating}
-                        disabled={updating}
+                        loading={updatingStatus === ServiceRequestStatus.Completed}
+                        disabled={updatingStatus !== null}
                         contentStyle={styles.buttonContent}
                       >
                         Mark Completed
@@ -173,8 +174,8 @@ export default function ServiceRequestDetailScreen() {
                       <Button
                         mode="outlined"
                         onPress={() => handleStatusUpdate(ServiceRequestStatus.Cancelled)}
-                        loading={updating}
-                        disabled={updating}
+                        loading={updatingStatus === ServiceRequestStatus.Cancelled}
+                        disabled={updatingStatus !== null}
                         contentStyle={styles.buttonContent}
                         textColor={theme.colors.error}
                         style={{ borderColor: theme.colors.error }}
@@ -212,7 +213,8 @@ export default function ServiceRequestDetailScreen() {
                 <Button
                   mode="contained-tonal"
                   onPress={handleAddNote}
-                  disabled={!noteText.trim()}
+                  loading={addingNote}
+                  disabled={!noteText.trim() || addingNote}
                   contentStyle={styles.buttonContent}
                 >
                   Add Note

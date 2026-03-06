@@ -209,7 +209,9 @@ export default function CreateServiceRequestScreen() {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<Priority>(Priority.Medium);
   const [category, setCategory] = useState<Category>(Category.Repair);
-  const [scheduledDate, setScheduledDate] = useState<Date | null>(null);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const [scheduledDate, setScheduledDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [activeField, setActiveField] = useState<'priority' | 'category' | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -225,21 +227,15 @@ export default function CreateServiceRequestScreen() {
     const newErrors: Record<string, string> = {};
     if (!title.trim()) newErrors.title = 'Title is required';
     if (!description.trim()) newErrors.description = 'Description is required';
-    if (!scheduledDate) newErrors.scheduledDate = 'Scheduled date is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [title, description, scheduledDate]);
+  }, [title, description]);
 
   const handleDateChange = useCallback(
     (_event: DateTimePickerEvent, selectedDate?: Date) => {
       setShowDatePicker(Platform.OS === 'ios');
       if (selectedDate) {
         setScheduledDate(selectedDate);
-        setErrors((prev) => {
-          const next = { ...prev };
-          delete next.scheduledDate;
-          return next;
-        });
       }
     },
     [],
@@ -256,7 +252,7 @@ export default function CreateServiceRequestScreen() {
           description: description.trim(),
           priority,
           category,
-          scheduledDate: scheduledDate!.toISOString(),
+          scheduledDate: scheduledDate.toISOString(),
         }),
       ).unwrap();
       router.back();
@@ -297,7 +293,7 @@ export default function CreateServiceRequestScreen() {
               Details
             </Text>
             <TextInput
-              label="Title"
+              label={<Text>Title <Text style={{ color: theme.colors.error }}>*</Text></Text>}
               value={title}
               onChangeText={(text) => {
                 setTitle(text);
@@ -315,7 +311,7 @@ export default function CreateServiceRequestScreen() {
             {errors.title && <HelperText type="error">{errors.title}</HelperText>}
 
             <TextInput
-              label="Description"
+              label={<Text>Description <Text style={{ color: theme.colors.error }}>*</Text></Text>}
               value={description}
               onChangeText={(text) => {
                 setDescription(text);
@@ -381,20 +377,19 @@ export default function CreateServiceRequestScreen() {
                 style={[
                   styles.iosDateRow,
                   {
-                    borderColor: errors.scheduledDate
-                      ? theme.colors.error
-                      : theme.colors.outline,
+                    borderColor: theme.colors.outline,
                     backgroundColor: theme.colors.surfaceVariant,
                   },
                 ]}
               >
                 <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                  {scheduledDate ? 'Scheduled for' : 'Pick a date'}
+                  Scheduled for
                 </Text>
                 <DateTimePicker
-                  value={scheduledDate ?? new Date()}
+                  value={scheduledDate}
                   mode="date"
                   display="compact"
+                  minimumDate={today}
                   onChange={handleDateChange}
                   accentColor={theme.colors.primary}
                 />
@@ -407,46 +402,33 @@ export default function CreateServiceRequestScreen() {
                     styles.androidDatePicker,
                     {
                       backgroundColor: theme.colors.surfaceVariant,
-                      borderColor: errors.scheduledDate
-                        ? theme.colors.error
-                        : scheduledDate
-                        ? theme.colors.primary
-                        : theme.colors.outline,
+                      borderColor: theme.colors.primary,
                       opacity: pressed ? 0.7 : 1,
                     },
                   ]}
                 >
                   <Text
                     variant="bodyLarge"
-                    style={{
-                      color: scheduledDate
-                        ? theme.colors.onSurface
-                        : theme.colors.onSurfaceVariant,
-                    }}
+                    style={{ color: theme.colors.onSurface }}
                   >
-                    {scheduledDate
-                      ? scheduledDate.toLocaleDateString(undefined, {
-                          weekday: 'short',
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })
-                      : 'Select a date'}
+                    {scheduledDate.toLocaleDateString(undefined, {
+                      weekday: 'short',
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
                   </Text>
                 </Pressable>
                 {showDatePicker && (
                   <DateTimePicker
-                    value={scheduledDate ?? new Date()}
+                    value={scheduledDate}
                     mode="date"
                     display="default"
+                    minimumDate={today}
                     onChange={handleDateChange}
                   />
                 )}
               </>
-            )}
-
-            {errors.scheduledDate && (
-              <HelperText type="error">{errors.scheduledDate}</HelperText>
             )}
           </Card.Content>
         </Card>

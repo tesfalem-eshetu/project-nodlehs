@@ -14,6 +14,7 @@ import {
 import { ServiceRequestStatus, Priority, Category } from '@/types';
 import type { ServiceRequest } from '@/types';
 import useDashboardData from '@/hooks/useDashboardData';
+import useRefreshData from '@/hooks/useRefreshData';
 import StatusIndicator from '@/components/StatusIndicator';
 import PriorityIndicator from '@/components/PriorityIndicator';
 
@@ -126,11 +127,12 @@ export default function DashboardScreen() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { statusCounts, priorityCounts, overdueRequests, status } = useDashboardData();
+  const { refreshing, onRefresh } = useRefreshData();
 
   const sp = theme.dark ? statusDark : statusColors;
   const pp = theme.dark ? priorityDark : priorityColors;
 
-  if (status === 'loading') {
+  if (status === 'loading' && overdueRequests.length === 0 && statusCounts.open === 0) {
     return (
       <View style={[styles.center, { backgroundColor: theme.colors.background }]}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -145,6 +147,8 @@ export default function DashboardScreen() {
       data={overdueRequests}
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.listContent}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
       renderItem={({ item }) => (
         <OverdueCard
           item={item}

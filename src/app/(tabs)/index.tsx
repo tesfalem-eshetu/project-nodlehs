@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '@/theme';
 import useEquipmentList from '@/hooks/useEquipmentList';
+import useRefreshData from '@/hooks/useRefreshData';
 import DeviceListItem from '@/components/DeviceListItem';
 
 export default function EquipmentListScreen() {
@@ -12,6 +13,7 @@ export default function EquipmentListScreen() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { devices, status, openCounts } = useEquipmentList();
+  const { refreshing, onRefresh } = useRefreshData();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredDevices = useMemo(() => {
@@ -25,7 +27,7 @@ export default function EquipmentListScreen() {
     );
   }, [devices, searchQuery]);
 
-  if (status === 'loading') {
+  if (status === 'loading' && devices.length === 0) {
     return (
       <View style={[styles.center, { backgroundColor: theme.colors.background }]}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -33,7 +35,7 @@ export default function EquipmentListScreen() {
     );
   }
 
-  if (status === 'failed') {
+  if (status === 'failed' && devices.length === 0) {
     return (
       <View style={[styles.center, { backgroundColor: theme.colors.background }]}>
         <Text style={{ color: theme.colors.onBackground }}>Failed to load devices</Text>
@@ -60,6 +62,8 @@ export default function EquipmentListScreen() {
         data={filteredDevices}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
         ListHeaderComponent={
           <Text
             variant="labelMedium"

@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '@/theme';
 import useDeviceWithRequests from '@/hooks/useDeviceWithRequests';
+import useRefreshData from '@/hooks/useRefreshData';
 import StatusIndicator from '@/components/StatusIndicator';
 import ServiceRequestListItem from '@/components/ServiceRequestListItem';
 
@@ -23,6 +24,7 @@ export default function DeviceDetailScreen() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { device, serviceRequests } = useDeviceWithRequests(id);
+  const { refreshing, onRefresh } = useRefreshData();
 
   const handleCreateSR = useCallback(() => {
     router.push(`/service-request/create?deviceId=${id}`);
@@ -84,6 +86,8 @@ export default function DeviceDetailScreen() {
         keyExtractor={(item) => item.id}
         style={styles.list}
         contentContainerStyle={{ paddingBottom: 8 }}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
         renderItem={({ item }) => (
           <ServiceRequestListItem
             serviceRequest={item}
