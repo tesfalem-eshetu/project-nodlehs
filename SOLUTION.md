@@ -62,11 +62,22 @@ React Native Paper was chosen for its built-in Material Design 3 theming system,
 - User sessions and role-based access. A regular user would create and view service requests, while an admin/staff side would handle request assignments, status updates, and resolution workflows separately. This better reflects how maintenance operations work in practice -- the person reporting an issue is not the same person resolving it.
 - Persistent storage so data survives app restarts.
 - Accessibility roles and labels across all interactive elements, ensuring the app works well with screen readers and assistive technology.
-- Unit tests for selectors and thunks, and integration tests for the create and status update flows.
 - More granular animations on list item insertions and status badge color transitions.
 - Push notifications or in-app alerts for overdue requests.
 - Pagination or infinite scroll for the equipment list and maintenance timeline.
 
+
+## Testing
+
+The project includes 116 unit tests across 12 test suites, covering both core state logic and UI components:
+
+- **Redux selectors** (26 tests): Every selector is tested, including filtered queries (`selectRequestsByDeviceId`, `selectOverdueRequests`), aggregations (`selectCountsByStatus`, `selectCountsByPriority`, `selectOpenRequestCountsMap`), and edge cases like empty state and missing IDs.
+- **Redux thunks** (13 tests): Each thunk is tested with the API layer fully mocked. Tests verify the loading lifecycle (pending/fulfilled/rejected), correct dispatch behavior, and cross-slice coordination (e.g., `updateServiceRequestStatus` with Completed triggers a device `lastMaintenanceDate` update).
+- **Slice reducers** (38 tests): Reducers are driven directly with raw action objects to test every branch of the optimistic update and rollback logic in isolation -- including edge cases like non-existent IDs, missing rollback data, and the difference between Completed and non-Completed status transitions on the devices slice.
+- **UI components** (29 tests): All five reusable components (`StatusIndicator`, `PriorityIndicator`, `DeviceListItem`, `ServiceRequestListItem`, `ActivityLogEntry`) are rendered with React Native Testing Library and verified for correct label mapping, conditional rendering, date formatting, and press interactions.
+- **Form validation** (10 tests): The Create Service Request screen is tested end-to-end for required field validation, whitespace handling, real-time error clearing, successful dispatch with navigation, and form-level error display on failure.
+
+Run with: `npm test`
 
 ## Additional Libraries
 
@@ -77,6 +88,8 @@ React Native Paper was chosen for its built-in Material Design 3 theming system,
 | `react-native-get-random-values` | Polyfill for `crypto.getRandomValues()` required by `uuid` v13 in the React Native Hermes runtime. Without it, ID generation fails at runtime. |
 | `react-native-safe-area-context` | Provides safe area insets for handling notches and home indicators. Used on screens without a navigation header. |
 | `uuid` | Generates unique IDs for service requests, activity log entries, and notes in the simulated API layer. |
+| `jest-expo` | Jest preset configured for Expo projects. Handles module resolution, transforms, and React Native compatibility out of the box. |
+| `@testing-library/react-native` | Renders components in a test environment and provides queries that mirror how users interact with the UI (by text, role, display value). |
 
 ## AI Tool Usage
 
