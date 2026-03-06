@@ -2,11 +2,13 @@ import { useState, useMemo } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import { Searchbar, Text, ActivityIndicator } from 'react-native-paper';
 import { useRouter } from 'expo-router';
+import { useAppTheme } from '@/theme';
 import useEquipmentList from '@/hooks/useEquipmentList';
 import DeviceListItem from '@/components/DeviceListItem';
 
 export default function EquipmentListScreen() {
   const router = useRouter();
+  const theme = useAppTheme();
   const { devices, status, openCounts } = useEquipmentList();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -23,27 +25,30 @@ export default function EquipmentListScreen() {
 
   if (status === 'loading') {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
+      <View style={[styles.center, { backgroundColor: theme.colors.background }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
 
   if (status === 'failed') {
     return (
-      <View style={styles.center}>
-        <Text>Failed to load devices</Text>
+      <View style={[styles.center, { backgroundColor: theme.colors.background }]}>
+        <Text style={{ color: theme.colors.onBackground }}>Failed to load devices</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Searchbar
         placeholder="Search by name, type, or location"
         value={searchQuery}
         onChangeText={setSearchQuery}
-        style={styles.searchbar}
+        style={[styles.searchbar, { backgroundColor: theme.colors.surface }]}
+        inputStyle={{ color: theme.colors.onSurface }}
+        placeholderTextColor={theme.colors.onSurfaceVariant}
+        iconColor={theme.colors.onSurfaceVariant}
       />
       <FlatList
         data={filteredDevices}
@@ -57,7 +62,7 @@ export default function EquipmentListScreen() {
         )}
         ListEmptyComponent={
           <View style={styles.center}>
-            <Text>No devices found</Text>
+            <Text style={{ color: theme.colors.onSurfaceVariant }}>No devices found</Text>
           </View>
         }
       />
@@ -76,6 +81,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   searchbar: {
-    margin: 8,
+    margin: 12,
+    elevation: 0,
+    borderRadius: 12,
   },
 });

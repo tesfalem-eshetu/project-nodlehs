@@ -1,7 +1,8 @@
 import { View, FlatList, StyleSheet } from 'react-native';
-import { Text, Button, TextInput, Divider } from 'react-native-paper';
+import { Text, Button, TextInput, Divider, Card } from 'react-native-paper';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { ServiceRequestStatus, Category } from '@/types';
+import { useAppTheme } from '@/theme';
 import useServiceRequestDetail from '@/hooks/useServiceRequestDetail';
 import StatusIndicator from '@/components/StatusIndicator';
 import PriorityIndicator from '@/components/PriorityIndicator';
@@ -16,6 +17,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
 
 export default function ServiceRequestDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const theme = useAppTheme();
   const {
     sr,
     device,
@@ -29,8 +31,8 @@ export default function ServiceRequestDetailScreen() {
 
   if (!sr) {
     return (
-      <View style={styles.center}>
-        <Text>Service request not found</Text>
+      <View style={[styles.center, { backgroundColor: theme.colors.background }]}>
+        <Text style={{ color: theme.colors.onBackground }}>Service request not found</Text>
       </View>
     );
   }
@@ -40,7 +42,7 @@ export default function ServiceRequestDetailScreen() {
     sr.status === ServiceRequestStatus.Cancelled;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Stack.Screen options={{ title: sr.title }} />
 
       <FlatList
@@ -49,38 +51,40 @@ export default function ServiceRequestDetailScreen() {
         renderItem={({ item }) => <ActivityLogEntryComponent entry={item} />}
         ListHeaderComponent={
           <View>
-            <View style={styles.section}>
-              <Text variant="headlineSmall">{sr.title}</Text>
-              <Text variant="bodyMedium" style={styles.description}>
-                {sr.description}
-              </Text>
-              {device && (
-                <Text variant="bodyMedium">Device: {device.name}</Text>
-              )}
-              <View style={styles.row}>
-                <Text variant="bodyMedium">Status: </Text>
-                <StatusIndicator status={sr.status} />
-              </View>
-              <View style={styles.row}>
-                <Text variant="bodyMedium">Priority: </Text>
-                <PriorityIndicator priority={sr.priority} />
-              </View>
-              <Text variant="bodyMedium">
-                Category: {CATEGORY_LABELS[sr.category] ?? sr.category}
-              </Text>
-              <Text variant="bodyMedium">
-                Scheduled: {new Date(sr.scheduledDate).toLocaleDateString()}
-              </Text>
-              <Text variant="bodyMedium">
-                Created: {new Date(sr.createdAt).toLocaleDateString()}
-              </Text>
-            </View>
-
-            <Divider />
+            <Card style={[styles.card, { backgroundColor: theme.colors.surface }]} mode="contained">
+              <Card.Content style={styles.cardContent}>
+                <Text variant="headlineSmall" style={{ color: theme.colors.onSurface }}>
+                  {sr.title}
+                </Text>
+                <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                  {sr.description}
+                </Text>
+                {device && (
+                  <DetailRow label="Device" value={device.name} />
+                )}
+                <View style={styles.row}>
+                  <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                    Status:{' '}
+                  </Text>
+                  <StatusIndicator status={sr.status} />
+                </View>
+                <View style={styles.row}>
+                  <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                    Priority:{' '}
+                  </Text>
+                  <PriorityIndicator priority={sr.priority} />
+                </View>
+                <DetailRow label="Category" value={CATEGORY_LABELS[sr.category] ?? sr.category} />
+                <DetailRow label="Scheduled" value={new Date(sr.scheduledDate).toLocaleDateString()} />
+                <DetailRow label="Created" value={new Date(sr.createdAt).toLocaleDateString()} />
+              </Card.Content>
+            </Card>
 
             {!isTerminal && (
               <View style={styles.section}>
-                <Text variant="titleMedium">Update Status</Text>
+                <Text variant="titleMedium" style={{ color: theme.colors.onBackground }}>
+                  Update Status
+                </Text>
                 <View style={styles.buttonRow}>
                   {sr.status === ServiceRequestStatus.Open && (
                     <>
@@ -139,15 +143,20 @@ export default function ServiceRequestDetailScreen() {
             )}
 
             {actionError && (
-              <Text variant="bodySmall" style={styles.errorText}>
+              <Text
+                variant="bodySmall"
+                style={[styles.errorText, { color: theme.colors.error }]}
+              >
                 {actionError}
               </Text>
             )}
 
-            <Divider />
+            <Divider style={{ backgroundColor: theme.colors.outlineVariant }} />
 
             <View style={styles.section}>
-              <Text variant="titleMedium">Add Note</Text>
+              <Text variant="titleMedium" style={{ color: theme.colors.onBackground }}>
+                Add Note
+              </Text>
               <TextInput
                 value={noteText}
                 onChangeText={setNoteText}
@@ -165,19 +174,35 @@ export default function ServiceRequestDetailScreen() {
               </Button>
             </View>
 
-            <Divider />
+            <Divider style={{ backgroundColor: theme.colors.outlineVariant }} />
 
             <View style={styles.sectionHeader}>
-              <Text variant="titleMedium">Activity Log</Text>
+              <Text variant="titleMedium" style={{ color: theme.colors.onBackground }}>
+                Activity Log
+              </Text>
             </View>
           </View>
         }
         ListEmptyComponent={
-          <View style={styles.center}>
-            <Text>No activity entries</Text>
+          <View style={styles.empty}>
+            <Text style={{ color: theme.colors.onSurfaceVariant }}>No activity entries</Text>
           </View>
         }
       />
+    </View>
+  );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  const theme = useAppTheme();
+  return (
+    <View style={styles.detailRow}>
+      <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+        {label}
+      </Text>
+      <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+        {value}
+      </Text>
     </View>
   );
 }
@@ -192,6 +217,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
   },
+  card: {
+    margin: 12,
+    borderRadius: 12,
+  },
+  cardContent: {
+    gap: 6,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   section: {
     padding: 16,
     gap: 8,
@@ -199,13 +240,6 @@ const styles = StyleSheet.create({
   sectionHeader: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-  },
-  description: {
-    color: '#424242',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   buttonRow: {
     flexDirection: 'row',
@@ -216,8 +250,11 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   errorText: {
-    color: '#c62828',
     paddingHorizontal: 16,
     paddingVertical: 4,
+  },
+  empty: {
+    padding: 16,
+    alignItems: 'center',
   },
 });

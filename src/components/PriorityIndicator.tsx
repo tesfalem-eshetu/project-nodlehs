@@ -1,5 +1,8 @@
-import { Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Text } from 'react-native-paper';
 import { Priority } from '@/types';
+import { useAppTheme } from '@/theme';
+import { priority as priorityColors, priorityDark } from '@/theme/colors';
 
 const LABELS: Record<Priority, string> = {
   [Priority.Critical]: 'Critical',
@@ -8,28 +11,33 @@ const LABELS: Record<Priority, string> = {
   [Priority.Low]: 'Low',
 };
 
-const COLORS: Record<Priority, string> = {
-  [Priority.Critical]: '#b71c1c',
-  [Priority.High]: '#e65100',
-  [Priority.Medium]: '#f9a825',
-  [Priority.Low]: '#558b2f',
-};
-
 interface PriorityIndicatorProps {
   priority: Priority;
 }
 
 export default function PriorityIndicator({ priority }: PriorityIndicatorProps) {
+  const theme = useAppTheme();
+  const palette = theme.dark ? priorityDark : priorityColors;
+  const colors = palette[priority];
+
   return (
-    <Text style={[styles.text, { color: COLORS[priority] }]}>
-      {LABELS[priority]}
-    </Text>
+    <View style={[styles.badge, { backgroundColor: colors.bg }]}>
+      <Text style={[styles.text, { color: colors.text }]}>
+        {LABELS[priority]}
+      </Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
   text: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
   },
 });

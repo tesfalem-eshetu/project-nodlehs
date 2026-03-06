@@ -1,5 +1,6 @@
 import 'react-native-get-random-values';
 import { useEffect } from 'react';
+import { useColorScheme } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
@@ -10,6 +11,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { store, useAppDispatch } from '@/store';
 import { fetchDevices } from '@/store/thunks/deviceThunks';
 import { fetchServiceRequests } from '@/store/thunks/serviceRequestThunks';
+import { lightTheme, darkTheme } from '@/theme';
 import 'react-native-reanimated';
 
 SplashScreen.preventAutoHideAsync();
@@ -30,6 +32,9 @@ function DataLoader() {
 }
 
 export default function RootLayout() {
+  const colorScheme = useColorScheme();
+  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+
   const [fontsLoaded] = useFonts({
     ...MaterialCommunityIcons.font,
   });
@@ -46,15 +51,22 @@ export default function RootLayout() {
 
   return (
     <Provider store={store}>
-      <PaperProvider>
+      <PaperProvider theme={theme}>
         <DataLoader />
-        <Stack>
+        <Stack
+          screenOptions={{
+            headerStyle: { backgroundColor: theme.colors.surface },
+            headerTintColor: theme.colors.onSurface,
+            headerShadowVisible: false,
+            contentStyle: { backgroundColor: theme.colors.background },
+          }}
+        >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="device/[id]" options={{ title: 'Device Details' }} />
           <Stack.Screen name="service-request/create" options={{ title: 'New Service Request' }} />
           <Stack.Screen name="service-request/[id]" options={{ title: 'Service Request' }} />
         </Stack>
-        <StatusBar style="auto" />
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       </PaperProvider>
     </Provider>
   );

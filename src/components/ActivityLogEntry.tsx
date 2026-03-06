@@ -1,6 +1,7 @@
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
 import type { ActivityEntry } from '@/types';
+import { useAppTheme } from '@/theme';
 
 interface ActivityLogEntryProps {
   entry: ActivityEntry;
@@ -17,27 +18,38 @@ const TYPE_LABELS: Record<ActivityEntry['type'], string> = {
 };
 
 export default function ActivityLogEntryComponent({ entry }: ActivityLogEntryProps) {
+  const theme = useAppTheme();
+
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { borderBottomColor: theme.colors.outlineVariant },
+      ]}
+    >
       <View style={styles.header}>
-        <Text variant="labelSmall" style={styles.type}>
+        <Text
+          variant="labelSmall"
+          style={[styles.type, { color: theme.colors.primary }]}
+        >
           {TYPE_LABELS[entry.type]}
         </Text>
-        <Text variant="bodySmall" style={styles.timestamp}>
+        <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
           {formatTimestamp(entry.timestamp)}
         </Text>
       </View>
-      <Text variant="bodyMedium">{entry.content}</Text>
+      <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+        {entry.content}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e0e0e0',
   },
   header: {
     flexDirection: 'row',
@@ -47,9 +59,5 @@ const styles = StyleSheet.create({
   },
   type: {
     fontWeight: '700',
-    color: '#424242',
-  },
-  timestamp: {
-    color: '#757575',
   },
 });

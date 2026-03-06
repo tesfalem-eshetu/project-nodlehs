@@ -13,6 +13,7 @@ import DateTimePicker, {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAppDispatch } from '@/store';
 import { createServiceRequest } from '@/store/thunks/serviceRequestThunks';
+import { useAppTheme } from '@/theme';
 import { Priority, Category } from '@/types';
 
 const PRIORITY_OPTIONS = [
@@ -33,6 +34,7 @@ export default function CreateServiceRequestScreen() {
   const { deviceId } = useLocalSearchParams<{ deviceId: string }>();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const theme = useAppTheme();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -91,14 +93,17 @@ export default function CreateServiceRequestScreen() {
 
   if (!deviceId) {
     return (
-      <View style={styles.center}>
-        <Text>No device selected</Text>
+      <View style={[styles.center, { backgroundColor: theme.colors.background }]}>
+        <Text style={{ color: theme.colors.onBackground }}>No device selected</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      contentContainerStyle={styles.content}
+    >
       <TextInput
         label="Title"
         value={title}
@@ -140,7 +145,7 @@ export default function CreateServiceRequestScreen() {
         <HelperText type="error">{errors.description}</HelperText>
       )}
 
-      <Text variant="labelLarge" style={styles.label}>
+      <Text variant="labelLarge" style={[styles.label, { color: theme.colors.onBackground }]}>
         Priority
       </Text>
       <SegmentedButtons
@@ -149,7 +154,7 @@ export default function CreateServiceRequestScreen() {
         buttons={PRIORITY_OPTIONS}
       />
 
-      <Text variant="labelLarge" style={styles.label}>
+      <Text variant="labelLarge" style={[styles.label, { color: theme.colors.onBackground }]}>
         Category
       </Text>
       <SegmentedButtons
@@ -158,7 +163,7 @@ export default function CreateServiceRequestScreen() {
         buttons={CATEGORY_OPTIONS}
       />
 
-      <Text variant="labelLarge" style={styles.label}>
+      <Text variant="labelLarge" style={[styles.label, { color: theme.colors.onBackground }]}>
         Scheduled Date
       </Text>
       <Button
